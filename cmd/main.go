@@ -12,19 +12,25 @@ import (
 )
 
 func main() {
-	fmt.Println("START")
-	go saveProduct(1, 3)
-	go saveProduct(3, 6)
+	ch := make(chan bool)
+
+	go saveProduct(1, 100, ch)
+	go saveProduct(101, 200, ch)
+	for i := 1; i < 2; i++ {
+		<-ch
+	}
 	fmt.Println("END")
 }
 
-func saveProduct(startPage int, endPage int) {
+func saveProduct(startPage int, endPage int, ch chan bool) {
 	category := "/zhenshchinam/odezhda/bryuki-i-shorty"
 	for startPage < endPage+1 {
+		fmt.Printf("page = %s\n", strconv.Itoa(startPage))
 		var details []*DetailProduct
 		pageUrl := fmt.Sprintf("https://www.wildberries.ru/catalogdata%s?page=%s", category, strconv.Itoa(startPage))
 		res := getRequest(pageUrl)
-
+		fmt.Println(res.StatusCode)
+		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
 
 		if err != nil {
@@ -39,10 +45,7 @@ func saveProduct(startPage int, endPage int) {
 		}
 		productsId := ids.Value.Data.Model.Products
 		for _, productId := range productsId {
-
 			detail := getDetailProduct(strconv.Itoa(productId.NmID))
-			fmt.Println(detail)
-
 			details = append(details, &detail)
 		}
 
@@ -58,6 +61,7 @@ func saveProduct(startPage int, endPage int) {
 		}
 		startPage++
 	}
+	ch <- true
 
 }
 
@@ -67,7 +71,7 @@ func getDetailProduct(productID string) DetailProduct {
 			"&lang=ru&curr=rub&offlineBonus=0&onlineBonus=0&emp=0&locale=ru&nm=%s", productID,
 	)
 	res := getRequest(urlDetail)
-	fmt.Println(res.StatusCode)
+	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
@@ -88,6 +92,7 @@ func getRequest(url string) *http.Response {
 		Timeout: time.Second * 1,
 	}
 	res, err := netClient.Get(url)
+
 	if err != nil {
 		log.Fatal(err)
 	}
