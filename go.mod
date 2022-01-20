@@ -1,3 +1,3 @@
-module github.com/todd-sudo/marketplace_analytics
+module github.com/wb_go
 
 go 1.17
