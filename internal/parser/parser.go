@@ -5,23 +5,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/wb_go/internal/dto"
 )
 
-func SleepyGopher(id int, c chan int) { // Объявляет канал как аргумент
-	fmt.Println("... ", id, " snore ...")
-	c <- id // Отправляет значение обратно к main
-}
-
+// Проходит по страница категории и собирает данные
 func SaveProduct(startPage int, endPage int) {
 	category := "/zhenshchinam/odezhda/bryuki-i-shorty"
 
 	for startPage < endPage+1 {
 		var details []dto.DetailProduct
+
 		fmt.Printf("page = %s\n", strconv.Itoa(startPage))
 
 		pageUrl := fmt.Sprintf(
@@ -47,8 +42,10 @@ func SaveProduct(startPage int, endPage int) {
 		productsId := ids.Value.Data.Model.Products
 		for _, productId := range productsId {
 			detail := getDetailProduct(strconv.Itoa(productId.NmID))
-			details = append(details, detail)
+			fmt.Println(detail)
+			details = append(details, detail.Data.Products...)
 		}
+
 		// save data
 		rawDataOut, err := json.MarshalIndent(&details, "", "  ")
 		if err != nil {
@@ -59,13 +56,13 @@ func SaveProduct(startPage int, endPage int) {
 		if err != nil {
 			log.Fatal("Cannot write updated settings file:", err)
 		}
+
 		startPage++
-
 	}
-
 }
 
-func getDetailProduct(productID string) dto.DetailProduct {
+// Получает детальную инфу о товаре
+func getDetailProduct(productID string) dto.DetailProductData {
 	urlDetail := fmt.Sprintf(
 		"https://wbxcatalog-ru.wildberries.ru/nm-2-card/catalog?spp=3"+
 			"&lang=ru&curr=rub&offlineBonus=0&onlineBonus=0&emp=0&locale=ru&nm=%s", productID,
@@ -77,7 +74,7 @@ func getDetailProduct(productID string) dto.DetailProduct {
 	if err != nil {
 		log.Fatal(err)
 	}
-	detail := dto.DetailProduct{}
+	detail := dto.DetailProductData{}
 
 	jsonErr := json.Unmarshal(body, &detail)
 
@@ -85,17 +82,4 @@ func getDetailProduct(productID string) dto.DetailProduct {
 		log.Fatal(jsonErr)
 	}
 	return detail
-}
-
-func getRequest(url string) *http.Response {
-	var netClient = http.Client{
-		Timeout: time.Second * 1,
-	}
-	res, err := netClient.Get(url)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return res
 }
