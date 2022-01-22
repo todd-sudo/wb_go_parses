@@ -14,7 +14,7 @@ import (
 func saveProduct(startPage int, endPage int) {
 	category := "/zhenshchinam/odezhda/bryuki-i-shorty"
 
-	for startPage < endPage+1 {
+	for startPage <= endPage+1 {
 		var details []dto.DetailProduct
 
 		fmt.Printf("page = %s\n", strconv.Itoa(startPage))
@@ -25,7 +25,6 @@ func saveProduct(startPage int, endPage int) {
 			strconv.Itoa(startPage),
 		)
 		res := getRequest(pageUrl)
-		fmt.Println(res.StatusCode)
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
 
@@ -40,9 +39,11 @@ func saveProduct(startPage int, endPage int) {
 			log.Fatal(jsonErr)
 		}
 		productsId := ids.Value.Data.Model.Products
+		fmt.Println(len(productsId))
 		for _, productId := range productsId {
 			go func() {
 				detail := getDetailProduct(strconv.Itoa(productId.NmID))
+
 				details = append(details, detail.Data.Products...)
 
 				// save data
@@ -56,11 +57,11 @@ func saveProduct(startPage int, endPage int) {
 					log.Fatal("Cannot write updated settings file:", err)
 				}
 			}()
-
 		}
-
 		startPage++
+		// time.Sleep(10 * time.Millisecond)
 	}
+	// return nil
 }
 
 // Получает детальную инфу о товаре
@@ -71,13 +72,13 @@ func getDetailProduct(productID string) dto.DetailProductData {
 	)
 	res := getRequest(urlDetail)
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
 
+	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-	detail := dto.DetailProductData{}
 
+	detail := dto.DetailProductData{}
 	jsonErr := json.Unmarshal(body, &detail)
 
 	if jsonErr != nil {

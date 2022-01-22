@@ -1,7 +1,5 @@
 package parser
 
-import "fmt"
-
 // Create gorutine and start parses
 func CreateTasks() {
 	page := getCountPage("/zhenshchinam/odezhda/bryuki-i-shorty")
@@ -12,8 +10,8 @@ func CreateTasks() {
 		page = page - countObjInPage
 		start := page
 		end := page + countObjInPage
-		fmt.Println(start, end)
+		// fmt.Println(start, end)
 		go saveProduct(start, end)
-		fmt.Scanln()
+		// fmt.Scanln()
 	}
 }
