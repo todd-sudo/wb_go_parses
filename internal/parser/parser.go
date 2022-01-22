@@ -12,9 +12,11 @@ import (
 
 // Проходит по страница категории и собирает данные
 func saveProduct(startPage int, endPage int) {
+
 	category := "/zhenshchinam/odezhda/bryuki-i-shorty"
 
 	for startPage <= endPage+1 {
+
 		var details []dto.DetailProduct
 
 		fmt.Printf("page = %s\n", strconv.Itoa(startPage))
@@ -42,6 +44,11 @@ func saveProduct(startPage int, endPage int) {
 		fmt.Println(len(productsId))
 		for _, productId := range productsId {
 			go func() {
+				defer func() {
+					if err := recover(); err != nil {
+						log.Println("panic occurred:", err)
+					}
+				}()
 				detail := getDetailProduct(strconv.Itoa(productId.NmID))
 
 				details = append(details, detail.Data.Products...)
@@ -59,9 +66,7 @@ func saveProduct(startPage int, endPage int) {
 			}()
 		}
 		startPage++
-		// time.Sleep(10 * time.Millisecond)
 	}
-	// return nil
 }
 
 // Получает детальную инфу о товаре
