@@ -11,7 +11,7 @@ import (
 )
 
 // Проходит по страница категории и собирает данные
-func SaveProduct(startPage int, endPage int) {
+func saveProduct(startPage int, endPage int) {
 	category := "/zhenshchinam/odezhda/bryuki-i-shorty"
 
 	for startPage < endPage+1 {
@@ -41,20 +41,22 @@ func SaveProduct(startPage int, endPage int) {
 		}
 		productsId := ids.Value.Data.Model.Products
 		for _, productId := range productsId {
-			detail := getDetailProduct(strconv.Itoa(productId.NmID))
-			fmt.Println(detail)
-			details = append(details, detail.Data.Products...)
-		}
+			go func() {
+				detail := getDetailProduct(strconv.Itoa(productId.NmID))
+				details = append(details, detail.Data.Products...)
 
-		// save data
-		rawDataOut, err := json.MarshalIndent(&details, "", "  ")
-		if err != nil {
-			log.Fatal("JSON marshaling failed:", err)
-		}
+				// save data
+				rawDataOut, err := json.MarshalIndent(&details, "", "  ")
+				if err != nil {
+					log.Fatal("JSON marshaling failed:", err)
+				}
 
-		err = ioutil.WriteFile(fmt.Sprintf("data/data_%s.json", strconv.Itoa(startPage)), rawDataOut, 0777)
-		if err != nil {
-			log.Fatal("Cannot write updated settings file:", err)
+				err = ioutil.WriteFile(fmt.Sprintf("data/data_%s.json", strconv.Itoa(startPage)), rawDataOut, 0777)
+				if err != nil {
+					log.Fatal("Cannot write updated settings file:", err)
+				}
+			}()
+
 		}
 
 		startPage++

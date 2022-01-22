@@ -19,7 +19,7 @@ func getRequest(url string) *http.Response {
 }
 
 // Проверят кол-во страниц и возвращает кол-во горутин
-func CheckCountPage(countPage int) int {
+func checkCountPage(countPage int) int {
 	if countPage < 10 {
 		return 1
 	} else if countPage >= 10 && countPage <= 30 {

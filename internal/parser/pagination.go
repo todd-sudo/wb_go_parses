@@ -10,7 +10,7 @@ import (
 )
 
 // Получает кол-во страниц по категории
-func GetCountPage(category string) int {
+func getCountPage(category string) int {
 	url := fmt.Sprintf(
 		"https://www.wildberries.ru/catalogdata%s?page=2",
 		category,
