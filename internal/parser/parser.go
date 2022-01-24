@@ -29,10 +29,10 @@ func saveProduct(startPage int, endPage int) {
 		res := getRequest(pageUrl)
 		defer res.Body.Close()
 		body, err := ioutil.ReadAll(res.Body)
-
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		ids := dto.IDSModel{}
 
 		jsonErr := json.Unmarshal(body, &ids)
@@ -75,6 +75,7 @@ func getDetailProduct(productID string) dto.DetailProductData {
 		"https://wbxcatalog-ru.wildberries.ru/nm-2-card/catalog?spp=3"+
 			"&lang=ru&curr=rub&offlineBonus=0&onlineBonus=0&emp=0&locale=ru&nm=%s", productID,
 	)
+
 	res := getRequest(urlDetail)
 	defer res.Body.Close()
 
